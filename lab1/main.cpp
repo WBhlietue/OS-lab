@@ -2,8 +2,47 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/wait.h>
+#include <signal.h>
 
 #define MAX_LINE 80
+
+struct CommandHistory
+{
+    char args[MAX_LINE + 1][MAX_LINE];
+    char firstLetter;
+};
+
+CommandHistory history[10];
+char *GetHistory(int num)
+{
+    char *str = (char *)malloc(sizeof(char) * MAX_LINE);
+    for (int i = 0; i <= MAX_LINE; i++)
+    {
+        if (strlen( history[num].args[i]) == 0)
+        {
+            break;
+        }
+        strcat(str, " ");
+        strcat(str, history[num].args[i]);
+    }
+    return str;
+}
+void PrintHistory()
+{
+    // system("clear");
+    printf("\nHistory:\n");
+    for (int i = 0; i < 10; i++)
+    {
+        printf("%d. %s\n", (i + 1), GetHistory(i));
+    }
+}
+void handle_SIGINT(int sig)
+{
+    write(STDOUT_FILENO, "\nCaught SIGINT, exiting now\n", sizeof("\nCaught SIGINT, exiting now\n"));
+    PrintHistory();
+    exit(0);
+}
 
 void setup(char inputBuffer[], char *args[], int *background)
 {
@@ -15,11 +54,6 @@ void setup(char inputBuffer[], char *args[], int *background)
     }
 
     inputBuffer[strlen(inputBuffer) - 1] = '\0';
-    // char tmpStr[strlen(inputBuffer) - 1];
-    // for(int i = 0; i < strlen(inputBuffer) - 1; i++){
-    //     tmpStr[i] = inputBuffer[i];
-    // }
-    // strcpy(inputBuffer, tmpStr);
     char *token = strtok(inputBuffer, " ");
     int a = 0;
     *background = 0;
@@ -31,6 +65,7 @@ void setup(char inputBuffer[], char *args[], int *background)
         }
         else
         {
+            *background = 0;
             args[a] = token;
             a++;
         }
@@ -41,37 +76,71 @@ void setup(char inputBuffer[], char *args[], int *background)
         printf("\n Too many arguments\n");
         exit(0);
     }
-    // else
-    // {
-    //     *background = (args[a - 1][0] == '&');
-    // }
 }
 
 int main()
 {
-    char inputBuffer[MAX_LINE];
+    signal(SIGINT, &handle_SIGINT);
     int background;
     char *args[MAX_LINE + 1];
+    int typedHistory = 0;
+
     while (1)
     {
         background = 0;
-
+        char inputBuffer[MAX_LINE];
+        for (int i = 0; i < MAX_LINE + 1; i++)
+        {
+            args[i] = NULL;
+        }
         setup(inputBuffer, args, &background);
         pid_t pid = fork();
-        if (pid == 0)
+        if (pid > 0)
         {
-            printf("%d parent  %4d %4d\n", getppid(), getpid(), pid);
+            if (typedHistory == 9)
+            {
+                for (int i = 0; i < 9; i++)
+                {
+                    history[i] = history[i + 1];
+                }
+                for (int i = 0; i <= MAX_LINE; i++)
+                {
+                    if (args[i] == NULL)
+                    {
+                        break;
+                    }
+                    strcpy(history[typedHistory].args[i], args[i]);
+                }
+            }
+            else
+            {
+                for (int i = 0; i <= MAX_LINE; i++)
+                {
+
+                    if (args[i] == NULL)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        strcpy(history[typedHistory].args[i], args[i]);
+                    }
+                }
+            }
             if (background == 0)
             {
+                int status = 0;
+                wait(&status);
+                typedHistory++;
             }
             else
             {
                 setup(inputBuffer, args, &background);
             }
         }
-        else if (pid > 0)
+        else if (pid == 0)
         {
-            printf("%d child  %4d %4d \n", getppid(), getpid(), pid);
+
             execvp(args[0], args);
             return 0;
         }
@@ -79,16 +148,12 @@ int main()
     return 0;
 }
 
-// int main(void)
+// int main()
 // {
-//     int i = 0;
-//     for (i = 0; i < 3; i++)
-//     {
-//         pid_t fpid = fork();
-//         if (fpid == 0)
-//             printf("son %d\n", i);
-//         else
-//             printf("father %d\n", i);
-//     }
+//     strcpy(history[0].args[0], "ls");
+//     // history[0].args[1] = (char*)"-l";
+//     // history[0].args[2] = NULL;
+//     history[0].firstLetter = 'g';
+//     PrintHistory();
 //     return 0;
 // }
