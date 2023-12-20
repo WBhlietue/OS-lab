@@ -1,0 +1,62 @@
+Programiin project 2 - Taskii medeeleld zoriulsan Linux kernel modul Ene daalgawart taskiin medeelliig tuhain taskiin process identifier  deer tulguurlan haruuldag Linux kernel module /proc file iig ashiglaj hiine.Ene project ni process indentifier iig /proc/pid file ruu huulj bicne. Pid ni proc/file d bichegdsenii daraa /proc/pid filaas unshilt hiih bolgond 1t taskiin ajilluulj baigaa commandiig 2t taskiin pid utgiig 3t taskiin odoogiin state iig medegdene. Kernel modula systemruu oruulsni daraa ashiglah arga ni:
+    echo "1395" > /proc/pid
+    cat /proc/pid
+    command = [bash] pid = [1395] state = [1]
+echo command /proc/pid.file ruu "1395" iig bichne. Tanii kernel ene toog processiin indentifier bolgon hadgalj avna. Cat command ni /proc/pid g unshij tanii kerneliin modul 1395 pid id tai taskuudiig avna.
+1. /proc file systemiig bichih 
+/proc file bichhiin tuld,  zurag 3.37 deer bga jishee kodiin file_operation structiin .write iig .write = proc_write bolgoj oorchilsonoor /proc/pid d bichih command ogsnii daraa proc_write() functsiig duudna.
+kmalloc() funkts ni kerneliin malloc() funkts tei ijil memory g huviaraldag, ylgaa ni kmalloc() funkts kerneliin memoryg huviarlagddag. GFP_KERNEL tug ni kerneliin memory huviarlah ajillagaa ehelseniig iltgene. copy_from_user() functs ni usr_buf(/proc/pid ruu bichsen ogogdliig aguulna) iin aguuliig sayhan huviarlagdsan kerneliin oi sanamjruu oruulna. Tanii kernel modul kstrtol() funktsiig ashiglan ene ogogdliin utgiig buhel too bolgon huvirgaj avna. kstrtol() funktsiin butets    int kstrtol(const char *str, unsigned int base, long  *res) ene ni str iig char helbereer hadgalan res ruu oroh base bolon ashiglagddag. Mon bid kmalloc() oor huviarlagdsan memoryg kfree() funktsiig duudan choloolj bga gedgiig sanaarai. Kerneliin tuvshinii kod bichhed hergelsen memoryg sullaj memory leak hiihees sergiileh ni mash chuhal.
+2. /proc file systemees unshih
+Process identifier hadgalagdsnii daraa /proc/pid ees unshilt hiih bolgond oruulsan commandiin ner, tuunii state iig butsaana. Linux iin PCB ni <linux/sched.h> tolgoi file dotor aguulagdah task_struct aar ilerhiilegdene. Processiin identifier ogogdsonoor pid_task() funkts holbootoi task_struct iig butsaana. pid_task functsiin helber ni           struct task_struct pid_task(struct pid * pid, enum pid_type type)
+Kerneliin funkts find_vpid() eer structiin pid id iig avh bolno, PIDTYPE_PID ni pid_type aar ashiglagdaj bolno.
+
+
+
+
+
+
+
+
+
+
+
+
+
+4
+
+
+
+
+
+Programiin project 3 - Taskiig lisltleh linux kerneliin modula
+Ene projecteer Linuxiin systemd odoogoor ajillaj baigaa buh taskuudiig lisldeg kerneliin  modul hiine. Taskuudaar linear bolon depth first helbeereer damjina.
+
+1. Taskuudaar linear helbereer damjih
+Linux kerneld for_each_process() ni odoogiin taskuudaar hylbar damjih bolomjiig olgodog:
+    #include <linux/sched.h>
+    struct task_struct *task;
+    for each process(task) {
+    /* on each iteration task points to the next task */
+    }
+task_structiin bichveruud for_each_process() iin davtaltuudad progrmam loopiig ilerhiilj chadna.
+ daalgawar
+ Systemiin buh taskuudaar davtdag for_each_process() iig ashiglasan kerneliin module butee. Nariivchlaval task buriin taskiin command, state bolon processiin id hevle (ene utguudiig avahiin tuld <linux/sched.h> iin task_structiig ashiglah ni zuitei). Ene codiig moduliin entry hesegt bicheerei tegsneer ug tuunii utguud kerneliin log bufferd bichigdene, bas bichegdsenii daraa dmesg commandaar ahin harj bolno. Oorinhoo kodiig zov ajillaj baigaa esehiig shalgahiin tuld kerneliin log buffer dotor baigaa ogogdoliig ps -el commandiin ogogdluudtei haritsuulj uzeerei. ps -el command ni systemiin buh taskuudiig haruulna. Taskuud ni dynamic uchir 2 commandiin hariu hoorondoo tostei baij bolno bas zarim taskuud zovhon neg command deer garch ireh magadlaltaig anhaarari.
+2. taskuudaar depth_first helbereer damjih
+Ene taskiin 2 dahi heseg ni systemiin buh taskuudaar depth_first search eer damjina. (jishee ni: zurag 3.7 giin processuud depth_first eer damjival 1,8415,8416,9298,9204,2808,3028,3610,4005 helbeereer damjina). Linux processiinha modiig series of listeer udirddag.<linux/sched.h> iin  task struct aas bid 2 shirheg list_head object olj harna uund:
+    children
+bolon 
+    sibling
+ene objectuud ni taskiin children bolon siblings uudiig aguulah listiin pointer ym.Mon linux anhnii taskiin medeelliig init_task aar damjuulah harj boldog, ene ni task_structiin neg torol ym. Ug medeelludiig ashiglaad bid init_taskiin childrenuudeer iinhu damjij bolno:
+   struct task struct *task;
+    struct list head *list;
+    list_for_each(list, &init task->children) {
+    task = list entry(list, struct task struct, sibling);
+    }
+list_for_each() ni hoyr parameter avna hoyulaa list_head torliin struct baina.
+* damjih listiin tolgoiruu zaasan pointer
+* damjih listiin node ruu zaasan pointer
+ daalgawar
+ init_task aas ehleed systemiin buh taskaar DFS mod ashiglan damjidag kernel modul butee.Mon ene projectiin ehnii heseg shig name,state bolon pid garga.Ene davtaltiig kerneliin entry moduld ajilluul, tegsneer hariu ni kerneliin log buffer luu orno. Hervee chi systemiin buh taskiig hevlevel ps ael commandaar hevleed garsan taskuudaas olon task baih magadlaltai. Ene ni zarim threaduud children helbereer garch irj angiin process helbereer haragdadgui bna. Tiim uchraas DFS modnii garaltiig shalgahiin tuld ps -eLf commandiig ashigla. Ene command ni systemiin buh task bolon threaduudiig haruulna.
+
+ Programiin project 4 Kerneliin ogogdliin butets
+ Linux kernel ni hed heden ogogdliin toroltei. End bid toirog bolon davhar linktei list ashigladag

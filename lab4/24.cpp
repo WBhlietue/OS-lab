@@ -6,8 +6,8 @@
 #include<omp.h>
 
 int inCircleNum = 0;
-const int MAX_THREADNUM = 2000;
-const int NUM_IN_THREAD = 200000;
+const int MAX_THREADNUM = 1000;
+const int NUM_IN_THREAD = 20000;
 
 float RandomFloat(){
     return (float)rand()/(float)RAND_MAX;
@@ -20,13 +20,13 @@ void CreateThread(int num){
     pid_t pid = vfork();
     if(pid == 0){
         int currentNum = 0;
-        #pragma omp parallel for
         for(int i = 0; i < NUM_IN_THREAD; i++){
             float x = RandomFloat();
             float y = RandomFloat();
             if(x*x + y*y <= 1){
                 currentNum++;
             }
+            // printf("%d", NUM_IN_THREAD);
         }
         inCircleNum += currentNum;
         _exit(0);

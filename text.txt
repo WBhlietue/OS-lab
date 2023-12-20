@@ -5,3 +5,6 @@ bugdiin hiine, exercise
 
 2r buleg programming peoject
 
+
+
+-fopenmp

@@ -274,6 +274,7 @@ int main()
             }
             else if (pid == 0)
             {
+                // freopen("asd.txt", "w", stdout);
                 execvp(args[0], args);
                 return 0;
             }

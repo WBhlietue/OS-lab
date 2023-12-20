@@ -1,0 +1,8 @@
+2.24 2.3 deer bid neg file iin ogogdliin oor file ruu huuldeg programmiin talaar uzsen. Ene programm ni hereglegchees medeelel huulah bolon medeelel damjuulah file iin medeelliig oruulj ajildag(file iin ner, bairshil).Ene programiig POSIX esvel Windows API ashiglaj bicne uu. Buh torliin aldaa shalgagchiig oruulha martuuzai medeelel huulah file baigaag shalgah geh met.
+
+Programiig bichij turshij uzsenii daraa ug programiig demjideg system deer bichsen bol systemiin duudlaguudiig haruuldag programiig ashiglaj ajiluulna uu.Linux systemd (strace utility) baigaa,MacOS d (dtruss command) bii.Ene heregseluudiig heregleh arga ni:
+Linux:
+	Strace ./FileCopy
+macOS:
+	sudo dtruss ./FileCopy
+Windows systemd iim heregsel baihgu uchir windowsiin debugger iig ashiglan systemiin duudlagiig harah heregtei bolno.

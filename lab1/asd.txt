@@ -1,0 +1,7 @@
+asd.txt
+kj.txt
+main
+main.cpp
+main.exe
+run.sh
+test.sh
